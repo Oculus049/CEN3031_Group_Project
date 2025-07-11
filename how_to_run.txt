@@ -1,0 +1,14 @@
+these are the packages you need to install (use latest version for all):
+- bcrypt
+- pydantic
+- fastapi
+- databases
+- sqlalchemy
+- uvicorn
+- passlib
+- sqlite (if you dont already have it)
+
+
+to run the app locally, go into the terminal (make sure you are in the project root directory) and use this command:
+uvicorn main:app --reload
+then click the url it gives you. Add /docs at the end in your browser to use FastAPI's gui
