@@ -1,13 +1,44 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from passlib.context import CryptContext
+from db import database, metadata, engine
+from models import users
+from schemas import UserLogin, UserCreate
+
 
 app = FastAPI()
+metadata.create_all(engine)
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+@app.post("/register")
+async def register(user: UserCreate):
+    query = users.select().where(users.c.username == user.username)
+    existing_user = await database.fetch_one(query)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already taken.")
+    hashed_password = pwd_context.hash(user.password)
+    query = users.insert().values(username=user.username, password=hashed_password)
+    await database.execute(query)
+    return {"message": "User registered successfully."}
+
+@app.post("/login")
+async def login(user: UserLogin):
+    query = users.select().where(users.c.username == user.username)
+    existing_user = await database.fetch_one(query)
+    if not existing_user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password.")
+    if not pwd_context.verify(user.password, existing_user["password"]):
+        raise HTTPException(status_code=400, detail="Incorrect username or password.")
+    return {"message": "Login successful."}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
