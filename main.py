@@ -18,6 +18,13 @@ async def startup():
 async def shutdown():
     await database.disconnect()
 
+from fastapi.responses import HTMLResponse
+
+@app.get("/" or "/login", response_class=HTMLResponse)
+async def root():
+    with open("login.html", "r") as file:
+        return file.read()
+
 @app.post("/register")
 async def register(user: UserCreate):
     query = users.select().where(users.c.username == user.username)

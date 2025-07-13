@@ -6,7 +6,8 @@ these are the packages you need to install (use latest version for all):
 - sqlalchemy
 - uvicorn
 - passlib
-- sqlite (if you dont already have it)
+- aiosqlite
+- sqlite (Your python probably already has this)
 
 
 to run the app locally, go into the terminal (make sure you are in the project root directory) and use this command:
