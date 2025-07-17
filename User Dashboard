@@ -22,10 +22,7 @@
     <main class="flex-1 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Upcoming Meetings Box -->
         <section class="bg-white rounded-2xl shadow p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-blue-900">Upcoming Meetings</h2>
-                <button class="px-4 py-2 bg-[#FFA500] text-white font-semibold rounded-md hover:bg-orange-600 transition text-sm">Create Meeting</button>
-            </div>
+            <h2 class="text-xl font-semibold text-blue-900 mb-4">Upcoming Meetings</h2>
             <ul class="space-y-3 text-gray-700">
                 <!-- Example items with priority star -->
                 <li class="flex justify-between items-center">
