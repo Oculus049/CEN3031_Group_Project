@@ -25,8 +25,17 @@ async def root():
     with open("login.html", "r") as file:
         return file.read()
 
+@app.get("/AdminDash", response_class=HTMLResponse)
+async def admin_dash():
+    with open("Admin_Dashboard.html", "r") as file:
+        return file.read()
+
 @app.post("/register")
 async def register(user: UserCreate):
+    if user.username.find(" ") or user.password.find(" "):
+        raise HTTPException(status_code=400, detail="Do not include spaces in your username/password")
+    if user.username.find("\"") or user.password.find("\""):
+        raise HTTPException(status_code=400, detail="Do not include quotes in your username/password")
     query = users.select().where(users.c.username == user.username)
     existing_user = await database.fetch_one(query)
     if existing_user:
