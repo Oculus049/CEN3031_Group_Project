@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from passlib.context import CryptContext
 from db import database, metadata, engine
-from models import users
-from schemas import UserLogin, UserCreate
+from models import users, userAvailabilities
+from schemas import UserLogin, UserCreate, AvailabilityCreate
 
 
 app = FastAPI()
@@ -25,10 +25,26 @@ async def root():
     with open("login.html", "r") as file:
         return file.read()
 
+@app.get("/home", response_class=HTMLResponse)
+async def home():
+    with open("home.html", "r") as file:
+        return file.read()
+
 @app.get("/AdminDash", response_class=HTMLResponse)
 async def admin_dash():
     with open("Admin_Dashboard.html", "r") as file:
         return file.read()
+
+@app.post("/availability")
+async def save_availability(data: AvailabilityCreate):
+    query = userAvailabilities.insert().values(
+        username=data.username,
+        date=data.date,
+        start_time=data.start_time,
+        end_time=data.end_time
+    )
+    await database.execute(query)
+    return {"message": "Availability saved successfully."}
 
 @app.post("/register")
 async def register(user: UserCreate):

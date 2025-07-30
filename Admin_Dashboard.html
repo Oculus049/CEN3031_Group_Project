@@ -124,5 +124,38 @@
             });
         });
     </script>
+
+    // script for setting availability:
+    <script>
+document.querySelector("form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const date = e.target.querySelector('input[type="date"]').value;
+    const start_time = e.target.querySelectorAll('input[type="time"]')[0].value;
+    const end_time = e.target.querySelectorAll('input[type="time"]')[1].value;
+
+    // Replace this with dynamic user info when users are properly authenticated
+    const username = "admin";
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/availability", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, date, start_time, end_time }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+        } else {
+            alert("Error: " + data.detail);
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        alert("Server error.");
+    }
+});
+</script>
 </body>
 </html>
