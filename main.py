@@ -32,9 +32,10 @@ async def admin_dash():
 
 @app.post("/register")
 async def register(user: UserCreate):
-    if user.username.find(" ") or user.password.find(" "):
+    print(user.username, user.password)
+    if user.username.find(" ") != -1 or user.password.find(" ") != -1:
         raise HTTPException(status_code=400, detail="Do not include spaces in your username/password")
-    if user.username.find("\"") or user.password.find("\""):
+    if user.username.find("\"") != -1 or user.password.find("\"") != -1:
         raise HTTPException(status_code=400, detail="Do not include quotes in your username/password")
     query = users.select().where(users.c.username == user.username)
     existing_user = await database.fetch_one(query)
