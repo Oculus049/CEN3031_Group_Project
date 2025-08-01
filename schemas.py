@@ -1,9 +1,15 @@
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from models import users, userAvailabilities
-from main import pwd_context, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 
 class UserCreate(BaseModel):
     username: str

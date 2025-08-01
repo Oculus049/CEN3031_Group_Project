@@ -8,3 +8,7 @@ users = Table(
     Column("username", String(35), unique=True, nullable=False, index=True),
     Column("password", String)
 )
+
+
+def userAvailabilities():
+    return None

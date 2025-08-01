@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from datetime import timedelta, datetime
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from passlib.context import CryptContext
 from db import database, metadata, engine, SessionLocal
 from schemas import *
 from models import users, userAvailabilities
@@ -31,9 +30,6 @@ def get_db():
     finally:
         db.close()
 
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 metadata.create_all(engine)
 
