@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Depends, status
-from datetime import timedelta, datetime
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from db import database, metadata, engine, SessionLocal
@@ -46,17 +45,17 @@ from fastapi.responses import HTMLResponse
 
 @app.get("/" or "/login", response_class=HTMLResponse)
 async def root():
-    with open("login.html", "r") as file:
+    with open("../login.html", "r") as file:
         return file.read()
 
 @app.get("/home", response_class=HTMLResponse)
 async def home():
-    with open("home.html", "r") as file:
+    with open("../home.html", "r") as file:
         return file.read()
 
 @app.get("/AdminDash", response_class=HTMLResponse)
 async def admin_dash():
-    with open("Admin_Dashboard.html", "r") as file:
+    with open("../Admin_Dashboard.html", "r") as file:
         return file.read()
 
 @app.post("/availability")
