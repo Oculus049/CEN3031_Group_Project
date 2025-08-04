@@ -14,8 +14,10 @@ meetings = Table(
     "meetings",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("title", String),
-    Column("time", String),
+    Column("title", String, nullable=False),
+    Column("time", String, nullable=False),
+    Column("date", String, nullable=False),
+    Column("url", String, nullable=False),
 )
 
 userAvailabilities = Table(
