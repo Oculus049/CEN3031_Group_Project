@@ -1,14 +1,11 @@
 from sqlalchemy import Table, Column, Integer, String
-from db import metadata
+from database import Base, engine
 
-users = Table(
-    "users",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("username", String(35), unique=True, nullable=False, index=True),
-    Column("password", String)
-)
+class User(Base):
+    __tablename__ = "users"
 
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(35), unique=True, nullable=False, index=True)
+    hashed_password = Column(String)
 
-def userAvailabilities():
-    return None
+User.metadata.create_all(bind=engine)
