@@ -12,7 +12,7 @@
   <div class="bg-black text-white text-sm px-4 py-2 flex justify-between items-center">
     <div>This is a preview. To book an event, share the link with your invitees.</div>
     <div>
-      <a href="home.html" class="text-xs underline px-2 py-1 flex items-center gap-1" aria-label="View live page">
+      <a href="home" class="text-xs underline px-2 py-1 flex items-center gap-1" aria-label="View live page">
         View live page
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -159,7 +159,7 @@
         <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-sm flex-1 auto-rows-min">
           <!-- Dynamically filled by JS -->
         </div>
-        
+
 
         <!-- Footer timezone & action -->
         <div class="mt-6 w-full border-t pt-4 flex justify-between items-center">
@@ -203,6 +203,11 @@
         max="17:00"
        />
     </label>
+    <h3 id="meetingURL" class="text-lg font-semibold mb-4"></h3>
+    <label class="block mb-2">
+      URL
+      <input type="text" id="meetingURLInput" class="w-full border rounded px-2 py-1" />
+    </label>
     <div class="flex justify-end gap-2">
       <button id="meetingCancel" class="px-3 py-1">Cancel</button>
       <button id="meetingSave" class="px-3 py-1 bg-blue-900 text-white rounded">Save</button>
@@ -222,6 +227,7 @@
     const meetingFormTitle = document.getElementById('meetingFormTitle');
     const meetingTitleIn = document.getElementById('meetingTitleInput');
     const meetingTimeIn = document.getElementById('meetingTimeInput');
+    const meetingURLIn = document.getElementById('meetingURLInput');
     const btnSave = document.getElementById('meetingSave');
     const btnCancel = document.getElementById('meetingCancel');
 
@@ -297,6 +303,7 @@
             meetingFormTitle.textContent = `Schedule Meeting for ${monthNames[currentMonth]} ${day}, ${currentYear}`;
             meetingTitleIn.value = '';
             meetingTimeIn.value = '';
+            meetingURLIn.value ='';
             formModal.classList.remove('hidden');
         });
 
@@ -312,9 +319,10 @@
     btnSave.addEventListener('click', () => {
       const title = meetingTitleIn.value.trim();
       const time = meetingTimeIn.value.trim();
+      const url = meetingURLIn.value.trim();
 
-      if (!title || !time) {
-        alert('Please enter both a title and time for the meeting.');
+      if (!title || !time || !url) {
+        alert('Please fill all fields');
         return;
       }
 
@@ -322,8 +330,37 @@
         alert('Please select a time between 08:00 and 17:00.');
         return;
       }
-      console.log('Meeting scheduled:', { date: pendingDayKey, title, time });
-      
+
+      // saved to the backend here
+      fetch('/meetings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: title,
+          time: time,
+          url: url,
+          date: pendingDayKey
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Meeting saved to backend:', data);
+        alert('Meeting saved!');
+        // Optionally: clear form or close modal
+      })
+      .catch(error => {
+        console.error('Error saving meeting:', error);
+        alert('Failed to save meeting.');
+      });
+
+
       if (pendingDayBtn.getAttribute('aria-pressed') === 'true') {
         pendingDayBtn.setAttribute('aria-pressed', 'false');
         pendingDayBtn.classList.remove('bg-blue-100', 'border-2', 'border-blue-900', 'text-blue-900', 'font-bold');
@@ -408,5 +445,4 @@
   </script>
 
 </body>
-
 </html>
