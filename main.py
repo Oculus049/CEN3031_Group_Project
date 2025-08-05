@@ -35,6 +35,11 @@ async def admin_dash():
     with open("Admin_Dashboard.html", "r") as file:
         return file.read()
 
+@app.get("/scheduling", response_class=HTMLResponse)
+async def scheduling():
+    with open("scheduling.html", "r") as file:
+        return file.read()
+
 @app.post("/availability")
 async def save_availability(data: AvailabilityCreate):
     query = userAvailabilities.insert().values(

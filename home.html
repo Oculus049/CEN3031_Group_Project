@@ -23,7 +23,10 @@
 
         <!-- HEADER -->
          <div class="flex items-center justify-between mb-8">
-            <button class="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800">
+            <button
+                onclick="window.location.href='scheduling';"
+                class="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800"
+            >
                 + New Meeting
             </button>
             <h1 class="text-3xl font-bold text-blue-900">Welcome user!</h1>
@@ -176,40 +179,6 @@
 </form>
   </div>
 </div>
-
-    <script>
-    const modal = document.getElementById('meetingModal');
-    const openModalBtn = document.querySelector('button.bg-blue-900'); // "+ New Meeting"
-    const cancelBtn = document.getElementById('cancelBtn');
-    const meetingForm = document.getElementById('meetingForm');
-
-    openModalBtn.addEventListener('click', () => {
-      modal.classList.remove('hidden');
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-
-    meetingForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const title = document.getElementById('meetingTitle').value;
-      const url = document.getElementById('meetingURL').value;
-      const date = document.getElementById('meetingDate').value;
-      const time = document.getElementById('meetingTime').value;
-
-      console.log("New Meeting:", { title, url, date, time });
-
-      await fetch("http://127.0.0.1:8000/meetings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, url, date, time }),
-      });
-      modal.classList.add('hidden');
-      meetingForm.reset();
-    });
-</script>
 
 </body>
 
