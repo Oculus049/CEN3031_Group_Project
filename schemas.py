@@ -13,3 +13,10 @@ class AvailabilityCreate(BaseModel):
     date: str
     start_time: str
     end_time: str
+
+class MeetingCreate(BaseModel):
+    title: str
+    url: str
+    date: str
+    time: str
+
