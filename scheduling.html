@@ -12,7 +12,7 @@
   <div class="bg-black text-white text-sm px-4 py-2 flex justify-between items-center">
     <div>This is a preview. To book an event, share the link with your invitees.</div>
     <div>
-      <a href="home" class="text-xs underline px-2 py-1 flex items-center gap-1" aria-label="View live page">
+      <a href="home.html" class="text-xs underline px-2 py-1 flex items-center gap-1" aria-label="View live page">
         View live page
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -28,7 +28,7 @@
       <div>
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-lg font-semibold text-blue-900 underline mb-0">Scheduling Settings</h1>
-          <a href="home" class="text-sm text-gray-500 hover:underline">&larr; Back</a>
+          <a href="home.html" class="text-sm text-gray-500 hover:underline">&larr; Back</a>
         </div>
         <h2 class="font-extrabold text-2xl mb-2 text-blue-900">Available hours</h2>
         <p class="text-sm text-gray-600 mb-4">
@@ -185,35 +185,30 @@
     </div>
   </div>
 
-  <!-- This modal pops up for creating a meeting after a day on the calander is clicked -->
-<div id="createModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
-  <div class="bg-white p-6 rounded-lg w-full max-w-sm shadow-lg">
-    <h2 class="text-xl font-bold text-blue-900 mb-4">Create Meeting</h2>
-    <form id="createMeetingForm" class="space-y-4">
-      <div>
-        <label class="block text-sm text-gray-700">Date</label>
-        <input type="text" id="modalDate" class="w-full border border-gray-300 rounded-md p-2" readonly />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-700">Title</label>
-        <input type="text" id="modalTitle" class="w-full border border-gray-300 rounded-md p-2" required />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-700">Time</label>
-        <input type="time" id="modalTime" class="w-full border border-gray-300 rounded-md p-2" required />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-700">URL</label>
-        <input type="url" id="modalURL" class="w-full border border-gray-300 rounded-md p-2" required />
-      </div>
-      <div class="flex justify-end gap-2">
-        <button type="button" id="cancelModal" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
-        <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800">Save</button>
-      </div>
-    </form>
+
+  <div id="meetingForm" class="hidden fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg p-6 w-80">
+    <h3 id="meetingFormTitle" class="text-lg font-semibold mb-4"></h3>
+    <label class="block mb-2">
+      Title
+      <input type="text" id="meetingTitleInput" class="w-full border rounded px-2 py-1" />
+    </label>
+    <label class="block mb-4">
+      Time
+      <input
+        type="time"
+        id="meetingTimeInput"
+        class="w-full border rounded px-2 py-1"
+        min="08:00"
+        max="17:00"
+       />
+    </label>
+    <div class="flex justify-end gap-2">
+      <button id="meetingCancel" class="px-3 py-1">Cancel</button>
+      <button id="meetingSave" class="px-3 py-1 bg-blue-900 text-white rounded">Save</button>
+    </div>
   </div>
 </div>
-
 
   <script>
     // Calendar for August 2025
@@ -222,6 +217,16 @@
     const prevBtn = document.getElementById('prevMonth');
     const nextBtn = document.getElementById('nextMonth');
     const selectedDates = new Set();
+
+    const formModal = document.getElementById('meetingForm');
+    const meetingFormTitle = document.getElementById('meetingFormTitle');
+    const meetingTitleIn = document.getElementById('meetingTitleInput');
+    const meetingTimeIn = document.getElementById('meetingTimeInput');
+    const btnSave = document.getElementById('meetingSave');
+    const btnCancel = document.getElementById('meetingCancel');
+
+    let pendingDayBtn = null;
+    let pendingDayKey = '';
 
     // Start with August 2025
     let currentYear = 2025;
@@ -239,6 +244,7 @@
     function firstWeekdayOfMonth(year, month) {
       return new Date(year, month, 1).getDay();
     }
+
 
     function renderCalendar() {
       calendarGrid.innerHTML = '';
@@ -275,15 +281,58 @@
           btn.classList.add('border', 'text-gray-700');
         }
 
+
         btn.addEventListener('click', () => {
-          const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          openCreateModal(formattedDate);  // a modal will open up when a date is clicked
+            pendingDayBtn = btn;
+            pendingDayKey = `${currentYear}-${currentMonth}-${day}`;
+
+            const weekdayIndex = new Date(currentYear, currentMonth, day).getDay();
+            const dayIds = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+            const cb = document.getElementById(dayIds[weekdayIndex]);
+            if (cb && !cb.checked) {
+              cb.checked = true;
+              cb.dispatchEvent(new Event('change'));
+            }
+
+            meetingFormTitle.textContent = `Schedule Meeting for ${monthNames[currentMonth]} ${day}, ${currentYear}`;
+            meetingTitleIn.value = '';
+            meetingTimeIn.value = '';
+            formModal.classList.remove('hidden');
         });
 
         wrapper.appendChild(btn);
         calendarGrid.appendChild(wrapper);
       }
     }
+
+    btnCancel.addEventListener('click', () => {
+      formModal.classList.add('hidden');
+    });
+
+    btnSave.addEventListener('click', () => {
+      const title = meetingTitleIn.value.trim();
+      const time = meetingTimeIn.value.trim();
+
+      if (!title || !time) {
+        alert('Please enter both a title and time for the meeting.');
+        return;
+      }
+
+      if (time < '08:00' || time > '17:00') {
+        alert('Please select a time between 08:00 and 17:00.');
+        return;
+      }
+      console.log('Meeting scheduled:', { date: pendingDayKey, title, time });
+      
+      if (pendingDayBtn.getAttribute('aria-pressed') === 'true') {
+        pendingDayBtn.setAttribute('aria-pressed', 'false');
+        pendingDayBtn.classList.remove('bg-blue-100', 'border-2', 'border-blue-900', 'text-blue-900', 'font-bold');
+      } else {
+        pendingDayBtn.setAttribute('aria-pressed', 'true');
+        pendingDayBtn.classList.add('bg-blue-100', 'border-2', 'border-blue-900', 'text-blue-900', 'font-bold');
+      }
+      formModal.classList.add('hidden');
+    });
 
     prevBtn.addEventListener('click', () => {
       if (currentMonth === 0) {
@@ -356,65 +405,7 @@
         });
     });
 
-
-    // script for modal popup after clicking on calander for meeting creation
-    const createModal = document.getElementById('createModal');
-    const modalTitle = document.getElementById('modalTitle')
-    const modalDate = document.getElementById('modalDate');
-    const modalTime = document.getElementById('modalTime');
-    const modalURL = document.getElementById('modalURL');
-    const cancelModal = document.getElementById('cancelModal');
-    const createForm = document.getElementById('createMeetingForm');
-
-    function openCreateModal(date) {
-      modalDate.value = date;
-      modalTitle.value ='';
-      modalTime.value = '';
-      modalURL.value = '';
-      createModal.classList.remove('hidden');
-      createModal.classList.add('flex');
-    }
-
-    cancelModal.addEventListener('click', () => {
-      createModal.classList.add('hidden');
-      createModal.classList.remove('flex');
-    });
-
-    createForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const meeting = {
-        title: modalTitle.value,
-        date: modalDate.value,
-        time: modalTime.value,
-        url: modalURL.value
-      };
-
-      try {
-        const response = await fetch('/meetings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(meeting)
-        });
-
-
-        if (response.ok) {
-          alert("Meeting saved!")
-        } else {
-          const err = await response.text();
-          console.error('Error saving meeting:', err);
-          alert("Could not save meeting: " + err)
-        }
-      } catch (error) {
-        console.error('Fetch error:', error);
-      }
-
-
-      createModal.classList.add('hidden');
-      createModal.classList.remove('flex');
-    });
   </script>
+
 </body>
 </html>
