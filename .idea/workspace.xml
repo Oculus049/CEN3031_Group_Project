@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3bcae03d-b1f8-477e-a02b-fbeb6cb24685" name="Changes" comment="" />
+    <list default="true" id="3bcae03d-b1f8-477e-a02b-fbeb6cb24685" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/CEN3031_Group_Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CEN3031_Group_Project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
