@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, SessionLocal
-from models import User
+from models import User, Meeting, UserAvailability
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
@@ -42,15 +42,17 @@ class UserCreate(BaseModel):
     username: str
     password: str
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
 class AvailabilityCreate(BaseModel):
     username: str
     date: str
     start_time: str
     end_time: str
+
+class MeetingCreate(BaseModel):
+    title: str
+    date: str
+    time: str
+    url: str
 
 
 def get_user_by_username(db: Session, username: str):
@@ -96,16 +98,18 @@ async def admin_dash():
     with open("../Admin_Dashboard.html", "r") as file:
         return file.read()"""
 
-'''@app.post("/availability")
-async def save_availability(data: AvailabilityCreate):
-    query = userAvailabilities.insert().values(
+@app.post("/availability")
+def save_availability(data: AvailabilityCreate, db: Session = Depends(get_db)):
+    availability = UserAvailability(
         username=data.username,
         date=data.date,
         start_time=data.start_time,
         end_time=data.end_time
     )
-    await database.execute(query)
-    return {"message": "Availability saved successfully."}'''
+    db.add(availability)
+    db.commit()
+    db.refresh(availability)
+    return {"message": "Availability saved successfully."}
 
 @app.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -133,6 +137,19 @@ async def login(user: UserLogin):
     if not pwd_context.verify(user.password, existing_user["password"]):
         raise HTTPException(status_code=400, detail="Incorrect username or password.")
     return {"message": "Login successful."}"""
+
+@app.post("/meetings")
+def save_meetings(data: MeetingCreate, db: Session = Depends(get_db)):
+    meeting = Meeting(
+        title=data.title,
+        date=data.date,
+        time=data.time,
+        url=data.url,
+    )
+    db.add(meeting)
+    db.commit()
+    db.refresh(meeting)
+    return {"message": "Meeting saved successfully.", "meeting_id": meeting.id}
 
 @app.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):

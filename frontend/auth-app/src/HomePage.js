@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function HomePage() {
     const navigate = useNavigate();
     const [view, setView] = useState("monthly");
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const [currentMonth, setCurrentMonth] = useState(7); // August (0-based)
+    const [currentYear, setCurrentYear] = useState(2025);
+
+    function daysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+    }
+    function firstWeekdayOfMonth(year, month) {
+        return new Date(year, month, 1).getDay();
+    }
 
     useEffect(() => {
         const verifyToken = async () => {    
@@ -21,6 +35,23 @@ function HomePage() {
         verifyToken();
     }, [navigate]);
 
+    const handlePrevMonth = () => {
+        if (currentMonth === 0) {
+            setCurrentMonth(11);
+            setCurrentYear(currentYear - 1);
+        } else {
+            setCurrentMonth(currentMonth - 1);
+        }
+    };
+    const handleNextMonth = () => {
+        if (currentMonth === 11) {
+            setCurrentMonth(0);
+            setCurrentYear(currentYear + 1);
+        } else {
+            setCurrentMonth(currentMonth + 1);
+        }
+    };
+
     return (
         <div className="bg-[#FFA500] min-h-screen font-sans">
             {/* Navigation Bar */}
@@ -28,10 +59,6 @@ function HomePage() {
                 <div className="container mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center space-x-8">
                         <span className="text-2xl font-bold text-white">Group-UP</span>
-                        <a href="#" className="text-white hover:underline">Dashboard</a>
-                        <a href="#" className="text-white hover:underline">Schedule</a>
-                        <a href="#" className="text-white hover:underline">Participants</a>
-                        <a href="#" className="text-white hover:underline">Settings</a>
                     </div>
                     <div> 
                         <span className="text-white text-2xl">👤</span>
@@ -42,9 +69,11 @@ function HomePage() {
             <div className="container mx-auto px-6 py-8">
                 {/* HEADER */}
                 <div className="flex items-center justify-between mb-8">
-                    <button className="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800">
-                        + New Meeting
-                    </button>
+                    <Link to="/scheduling">
+                        <button className="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800">
+                            + New Meeting
+                        </button>
+                    </Link>
                     <h1 className="text-3xl font-bold text-blue-900">Welcome user!</h1>
                 </div>
 
@@ -91,30 +120,59 @@ function HomePage() {
                     {/* Monthly View */}
                     {view === "monthly" && (
                         <section className="flex-1 bg-white p-4 rounded-xl shadow-md">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="text-xl font-semibold text-blue-900">July 2025</div>
-                                <button className="text-blue-900 text-2xl">&gt;</button>
+                            <div className="flex items-center justify-center mb-4 gap-4">
+                                <button
+                                    className="text-blue-900 text-2xl"
+                                    onClick={handlePrevMonth}
+                                    aria-label="Previous month"
+                                >&lt;</button>
+                                <div className="text-xl font-semibold text-blue-900 min-w-[120px] text-center">
+                                    {monthNames[currentMonth]} {currentYear}
+                                </div>
+                                <button
+                                    className="text-blue-900 text-2xl"
+                                    onClick={handleNextMonth}
+                                    aria-label="Next month"
+                                >&gt;</button>
                             </div>
                             <table className="w-full border-collapse text-gray-700 text-sm">
                                 <thead>
                                     <tr>
-                                        <th className="px-4 py-2 border">Sun</th>
-                                        <th className="px-4 py-2 border">Mon</th>
-                                        <th className="px-4 py-2 border">Tue</th>
-                                        <th className="px-4 py-2 border">Wed</th>
-                                        <th className="px-4 py-2 border">Thu</th>
-                                        <th className="px-4 py-2 border">Fri</th>
-                                        <th className="px-4 py-2 border">Sat</th>
+                                        <th className="px-4 py-2 border w-16">Sun</th>
+                                        <th className="px-4 py-2 border w-16">Mon</th>
+                                        <th className="px-4 py-2 border w-16">Tue</th>
+                                        <th className="px-4 py-2 border w-16">Wed</th>
+                                        <th className="px-4 py-2 border w-16">Thu</th>
+                                        <th className="px-4 py-2 border w-16">Fri</th>
+                                        <th className="px-4 py-2 border w-16">Sat</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {[...Array(4)].map((_, i) => (
-                                        <tr key={i}>
-                                            {[...Array(7)].map((_, j) => (
-                                                <td key={j} className="border h-24 p-1"></td>
-                                            ))}
-                                        </tr>
-                                    ))}
+                                    {(() => {
+                                        const days = daysInMonth(currentYear, currentMonth);
+                                        const offset = firstWeekdayOfMonth(currentYear, currentMonth);
+                                        const cells = [];
+                                        for (let i = 0; i < offset; i++) {
+                                            cells.push(<td key={`blank-${i}`} className="border h-24 p-1 w-16"></td>);
+                                        }
+                                        for (let day = 1; day <= days; day++) {
+                                            cells.push(
+                                                <td key={day} className="border h-24 p-1 text-left align-top w-16">
+                                                    {day}
+                                                </td>
+                                            );
+                                        }
+                                        // Fill out the last row with blanks if needed
+                                        while (cells.length % 7 !== 0) {
+                                            cells.push(<td key={`end-blank-${cells.length}`} className="border h-24 p-1 w-16"></td>);
+                                        }
+                                        // Split into rows of 7
+                                        const rows = [];
+                                        for (let i = 0; i < cells.length; i += 7) {
+                                            rows.push(<tr key={i}>{cells.slice(i, i + 7)}</tr>);
+                                        }
+                                        return rows;
+                                    })()}
                                 </tbody>
                             </table>
                         </section>
