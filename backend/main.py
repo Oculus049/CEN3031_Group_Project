@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, SessionLocal
@@ -140,9 +140,19 @@ async def login(user: UserLogin):
 
 @app.post("/meetings")
 def save_meetings(data: MeetingCreate, db: Session = Depends(get_db)):
+    # Ensure date is in YYYY-MM-DD format with leading zeros
+    try:
+        parts = data.date.split('-')
+        year = parts[0]
+        month = str(parts[1]).zfill(2)
+        day = str(parts[2]).zfill(2)
+        formatted_date = f"{year}-{month}-{day}"
+    except Exception:
+        raise HTTPException(status_code=400, detail="Date must be in YYYY-MM-DD format")
+
     meeting = Meeting(
         title=data.title,
-        date=data.date,
+        date=formatted_date,
         time=data.time,
         url=data.url,
     )
@@ -150,6 +160,25 @@ def save_meetings(data: MeetingCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(meeting)
     return {"message": "Meeting saved successfully.", "meeting_id": meeting.id}
+
+@app.get("/meetings")
+def get_meetings(year: int = Query(...), month: int = Query(...), db: Session = Depends(get_db)):
+    # month is 1-based (January=1)
+    month_str = str(month).zfill(2)
+    year_str = str(year)
+    # Dates are stored as "YYYY-MM-DD"
+    meetings = db.query(Meeting).all() #.filter(Meeting.date.like(f"{year_str}-{month_str}-%")).all()
+    # Convert SQLAlchemy objects to dicts
+    print(f"Retrieved {len(meetings)} meetings for {year_str}-{month_str}")
+    return [ 
+        {
+            "id": m.id,
+            "title": m.title,
+            "date": m.date,
+            "time": m.time,
+            "url": m.url
+        } for m in meetings
+    ]
 
 @app.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -176,6 +205,20 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 async def verify_user_token(token: str):
     verify_token(token)
     return {"message": "Token is valid."}
+
+@app.post("/register-direct")
+def register_user_direct(username: str = Query(...), password: str = Query(...), db: Session = Depends(get_db)):
+    db_user = get_user_by_username(db, username=username)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already exists.")
+    if " " in username or " " in password or "\"" in username or "\"" in password:
+        raise HTTPException(status_code=400, detail="Do not include spaces or quotes in your username/password")
+    hashed_password = pwd_context.hash(password)
+    db_user = User(username=username, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {"message": "User registered successfully.", "username": username}
 
 if __name__ == "__main__":
     import uvicorn
