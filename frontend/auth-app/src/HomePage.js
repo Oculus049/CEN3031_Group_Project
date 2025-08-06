@@ -52,6 +52,26 @@ function HomePage() {
         }
     };
 
+    // Meetings state and modal
+    const [meetings, setMeetings] = useState([]);
+    const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+    // Fetch meetings for the current month
+    useEffect(() => {
+        fetch(`http://localhost:8000/meetings?year=${currentYear}&month=${currentMonth + 1}`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setMeetings(data);
+                } else if (Array.isArray(data.meetings)) {
+                    setMeetings(data.meetings);
+                } else {
+                    setMeetings([]);
+                }
+            })
+            .catch(() => setMeetings([]));
+    }, [currentMonth, currentYear]);
+
     return (
         <div className="bg-[#FFA500] min-h-screen font-sans">
             {/* Navigation Bar */}
@@ -156,9 +176,32 @@ function HomePage() {
                                             cells.push(<td key={`blank-${i}`} className="border h-24 p-1 w-16"></td>);
                                         }
                                         for (let day = 1; day <= days; day++) {
+                                            // Find meetings for this day (robust date parsing)
+                                            const dayMeetings = meetings.filter(m => {
+                                                const [year, month, dateDay] = m.date.split('-').map(Number);
+                                                return (
+                                                    year === currentYear &&
+                                                    month === currentMonth &&
+                                                    dateDay === day
+                                                );
+                                            });
+
                                             cells.push(
                                                 <td key={day} className="border h-24 p-1 text-left align-top w-16">
-                                                    {day}
+                                                    <div>{day}</div>
+                                                    {dayMeetings.map(meeting => (
+                                                        <div
+                                                            key={meeting.id}
+                                                            className="bg-blue-200 text-blue-900 rounded px-1 py-0.5 mt-1 text-xs cursor-pointer w-full truncate"
+                                                            title={meeting.title}
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                setSelectedMeeting(meeting);
+                                                            }}
+                                                        >
+                                                            {meeting.time} {meeting.title}
+                                                        </div>
+                                                    ))}
                                                 </td>
                                             );
                                         }
@@ -189,6 +232,25 @@ function HomePage() {
                     )}
                 </div>
             </div>
+
+            {/* Meeting Details Modal */}
+            {selectedMeeting && (
+                <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-lg p-6 w-80">
+                        <h3 className="text-lg font-semibold mb-2">Meeting Details</h3>
+                        <div className="mb-2"><strong>Title:</strong> {selectedMeeting.title}</div>
+                        <div className="mb-2"><strong>Date:</strong> {selectedMeeting.date}</div>
+                        <div className="mb-2"><strong>Time:</strong> {selectedMeeting.time}</div>
+                        <div className="mb-2"><strong>URL:</strong> <a href={selectedMeeting.url} className="text-blue-700 underline" target="_blank" rel="noopener noreferrer">{selectedMeeting.url}</a></div>
+                        <div className="flex justify-end mt-4">
+                            <button
+                                className="px-3 py-1 bg-blue-900 text-white rounded"
+                                onClick={() => setSelectedMeeting(null)}
+                            >Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
