@@ -132,6 +132,7 @@ function Scheduling() {
         <div className="bg-[#FFA500] min-h-screen font-sans">
             {/* Preview Banner */}
             <div className="bg-yellow text-white text-sm px-4 py-6 flex justify-between items-center"></div>
+
             <div className="flex flex-col lg:flex-row max-w-5xl mx-auto mt-10 gap-8 px-4">
                 {/* Left: Available hours */}
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 w-full lg:w-1/3 flex flex-col justify-between">
@@ -174,7 +175,6 @@ function Scheduling() {
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 w-full lg:w-2/3 flex flex-col">
                     <div className="border-b px-8 py-6 flex items-center justify-between">
                         <span className="text-2xl font-extrabold text-blue-900">Group-UP</span>
-                        <span className="text-xs bg-black text-white px-3 py-1 rounded">This is a preview.</span>
                     </div>
                     <div className="px-8 py-8 flex flex-col flex-1">
                         {/* Calendar Header */}

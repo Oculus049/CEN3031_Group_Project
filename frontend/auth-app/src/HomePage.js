@@ -74,7 +74,7 @@ function HomePage() {
                             + New Meeting
                         </button>
                     </Link>
-                    <h1 className="text-3xl font-bold text-blue-900">Welcome user!</h1>
+                    <h1 className="text-3xl font-bold text-blue-900">Welcome!</h1>
                 </div>
 
                 <div className="flex space-x-6">
